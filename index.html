@@ -2465,19 +2465,19 @@
             <div class="p-section">
               <div class="p-section-title">クイックアクション</div>
               <div class="quick-actions">
-                <div class="quick-action" onclick="navigateTo('p-absence')">
+                <div class="quick-action" onclick="parentNav('p-absence')">
                   <div class="quick-action-icon" style="background:var(--danger-bg);color:var(--danger);">
                     <i data-lucide="calendar-x"></i>
                   </div>
                   <span>休み連絡</span>
                 </div>
-                <div class="quick-action" onclick="navigateTo('p-makeup')">
+                <div class="quick-action" onclick="parentNav('p-makeup')">
                   <div class="quick-action-icon" style="background:var(--success-bg);color:var(--primary);">
                     <i data-lucide="calendar-check"></i>
                   </div>
                   <span>振替予約</span>
                 </div>
-                <div class="quick-action" onclick="navigateTo('p-announce')">
+                <div class="quick-action" onclick="parentNav('p-announce')">
                   <div class="quick-action-icon" style="background:var(--info-bg);color:var(--info);">
                     <i data-lucide="bell"></i>
                   </div>
@@ -3126,7 +3126,7 @@
           <div data-view="p-more">
             <div class="p-section">
               <div class="menu-list">
-                <div class="menu-item" onclick="navigateTo('p-fees')">
+                <div class="menu-item" onclick="parentNav('p-fees')">
                   <div class="menu-icon menu-icon-green">
                     <i data-lucide="wallet"></i>
                   </div>
@@ -3136,7 +3136,7 @@
                   </div>
                   <div class="menu-arrow"><i data-lucide="chevron-right"></i></div>
                 </div>
-                <div class="menu-item" onclick="navigateTo('p-course')">
+                <div class="menu-item" onclick="parentNav('p-course')">
                   <div class="menu-icon menu-icon-blue">
                     <i data-lucide="repeat"></i>
                   </div>
@@ -3608,14 +3608,25 @@
     // ========================================
     // LOGIN
     // ========================================
-    function login(role) {
-      document.getElementById('loginScreen').style.opacity = '0';
+    function handleLogin(role) {
+      const loginEl = document.getElementById('loginScreen');
+      loginEl.style.opacity = '0';
       setTimeout(() => {
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('appContainer').style.display = 'block';
-        setTimeout(() => document.getElementById('appContainer').style.opacity = '1', 10);
+        loginEl.style.display = 'none';
+        document.getElementById('topBar').style.display = 'flex';
+        document.getElementById('phoneWrapper').style.display = '';
+        document.getElementById('adminWrapper').style.display = '';
         switchRole(role);
+        lucide.createIcons();
       }, 300);
+    }
+
+    function handleLogout() {
+      document.getElementById('loginScreen').style.display = 'flex';
+      setTimeout(() => document.getElementById('loginScreen').style.opacity = '1', 10);
+      document.getElementById('topBar').style.display = 'none';
+      document.getElementById('phoneWrapper').classList.remove('visible');
+      document.getElementById('adminWrapper').classList.remove('visible');
     }
 
     // ========================================
@@ -3623,12 +3634,11 @@
     // ========================================
     function switchRole(role) {
       currentRole = role;
-      document.querySelectorAll('.role-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.role === role);
-      });
-      document.getElementById('parentWrapper').classList.toggle('visible', role === 'parent');
+      document.getElementById('roleParent').classList.toggle('active', role === 'parent');
+      document.getElementById('roleAdmin').classList.toggle('active', role === 'admin');
+      document.getElementById('phoneWrapper').classList.toggle('visible', role === 'parent');
       document.getElementById('adminWrapper').classList.toggle('visible', role === 'admin');
-      if (role === 'admin') lucide.createIcons();
+      lucide.createIcons();
     }
 
     // ========================================
@@ -3636,20 +3646,19 @@
     // ========================================
     function parentNav(view) {
       currentParentView = view;
-      document.querySelectorAll('#parentWrapper [data-view]').forEach(el => {
+      document.querySelectorAll('#phoneWrapper [data-view]').forEach(el => {
         el.classList.remove('active');
         el.style.opacity = '0';
       });
-      const target = document.querySelector('#parentWrapper [data-view="' + view + '"]');
+      const target = document.querySelector('#phoneWrapper [data-view="' + view + '"]');
       if (target) {
         target.classList.add('active');
         setTimeout(() => target.style.opacity = '1', 10);
       }
-      const titleEl = document.getElementById('phoneHeaderTitle');
+      const titleEl = document.getElementById('appHeaderTitle');
       if (titleEl) titleEl.textContent = parentViewTitles[view] || '';
       const content = document.querySelector('.phone-content');
       if (content) content.scrollTop = 0;
-      // Update bottom nav
       document.querySelectorAll('.bottom-nav .nav-item').forEach(item => {
         item.classList.toggle('active', item.dataset.nav === view);
       });
@@ -3717,6 +3726,11 @@
         t.classList.toggle('active', (i === 0 && tab === 'monthly') || (i === 1 && tab === 'refund'));
       });
     }
+
+    // Fee tab click
+    document.querySelectorAll('#feeTabs .p-tab').forEach(tab => {
+      tab.addEventListener('click', () => showFeeTab(tab.dataset.feeTab));
+    });
 
     // ========================================
     // CALENDAR INTERACTION
